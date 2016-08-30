@@ -9,17 +9,18 @@ module.exports = {
               const cassandraD = require('cassandra-driver');
               const cliente = new cassandraD.Client({ contactPoints: ['127.0.0.1'], keyspace: 'chaplist'});
 
-              const query = 'INSERT INTO Oferta_por_id(bucket, id_oferta, imagenes, fecha_inicio, fecha_final, '
+              var query = 'INSERT INTO Oferta_por_id(bucket, id_oferta, imagenes, fecha_inicio, fecha_final, '
                  + 'precio_normal, precio_oferta, upcs, nombre, descuento, categorias, sucursales, puntuacion)'
                  //+ ' VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)'
                  + 'VALUES(1,uuid(),{\''+offer.image+'\'}, \''+finicio+'\', \''
                  +ffin+'\', '+offer.normalPrice+', '+offer.offerPrice+', {\''+offer.upc
                  +'\'}, \''+offer.descripcion+'\', 0, {\'categoria\'}, {\'sucursales\'}, 0);';
-              //const params = [1, uuid(), '{'+offer.image+'}', finicio, ffin, offer.normalPrice, offer.offerPrice, '{'+offer.upc+'}', offer.descripcion, 0, '{categoria}', '{sucursales}'];
+              //var params = [1, 'uuid()', '{\''+offer.image+'\'}', '\''+finicio+'\'', '\''+ffin+'\'', offer.normalPrice, offer.offerPrice, '{\''+offer.upc+'\'}', '\''+offer.descripcion+'\'', 0, '{\'categoria\'}', '{\'sucursales\'}', 0];
               cliente.execute(query, function(err, result) {
-
+              //cliente.execute(query, params, { prepare: true },  function(err, result) {
+                  next(err);
               });
-              next(true);
+              next(false);
             },
             addProduct: function (offer, data, next) {
                 api.models.product.findOrCreate({
