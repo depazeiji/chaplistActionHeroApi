@@ -5,37 +5,21 @@ module.exports = {
     stopPriority: 1000,
     initialize: function (api, next) {
         api.offerInit = {
-            updateOffer: function (supermarket,next) {
-                api.models.offer.update({
-                        current: false
-                    }, {
-                        where: {
-                            current: true,
-                            $and: {
-                                supermarketId: supermarket
-                            }
-                        }
-                    })
-                    .then(function (offer) {
-                        next(JSON.stringify(offer), false);
-                    })
-                    .catch(function (error) {
-                        next(JSON.stringify(error), true);
-                    });
-            },
-            createOffer: function (finicio, ffin, supermarket, next) {
-                api.models.offer.create({
-                        dateInit: finicio,
-                        dateEnd: ffin,
-                        supermarketId: supermarket,
-                        current: true
-                    })
-                    .then(function (offer) {
-                        next(offer, false);
-                    })
-                    .catch(function (error) {
-                        next(error, true);
-                    });
+            createOffer: function (finicio, ffin, supermarket, offer, next) {
+              const cassandraD = require('cassandra-driver');
+              const cliente = new cassandraD.Client({ contactPoints: ['127.0.0.1'], keyspace: 'chaplist'});
+
+              const query = 'INSERT INTO Oferta_por_id(bucket, id_oferta, imagenes, fecha_inicio, fecha_final, '
+                 + 'precio_normal, precio_oferta, upcs, nombre, descuento, categorias, sucursales, puntuacion)'
+                 //+ ' VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)'
+                 + 'VALUES(1,uuid(),{\''+offer.image+'\'}, \''+finicio+'\', \''
+                 +ffin+'\', '+offer.normalPrice+', '+offer.offerPrice+', {\''+offer.upc
+                 +'\'}, \''+offer.descripcion+'\', 0, {\'categoria\'}, {\'sucursales\'}, 0);';
+              //const params = [1, uuid(), '{'+offer.image+'}', finicio, ffin, offer.normalPrice, offer.offerPrice, '{'+offer.upc+'}', offer.descripcion, 0, '{categoria}', '{sucursales}'];
+              cliente.execute(query, function(err, result) {
+
+              });
+              next(true);
             },
             addProduct: function (offer, data, next) {
                 api.models.product.findOrCreate({
@@ -57,7 +41,7 @@ module.exports = {
                             likes: 0,
                             image: data.image,
                             image1: '',
-                            image2: '' 
+                            image2: ''
                         })
                         .then(function (offer) {
                             next(JSON.stringify(offer), false);
